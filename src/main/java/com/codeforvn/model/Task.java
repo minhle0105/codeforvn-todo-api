@@ -13,4 +13,5 @@ public class Task {
     private Long id;
     private String description;
     private String priorityLevel;
+    private boolean completed;
 }

@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping
+@RequestMapping("/tasks")
 public class TaskController {
     @Autowired
     private ITaskService taskService;
@@ -46,7 +46,7 @@ public class TaskController {
     public ResponseEntity<Task> deleteProduct(@PathVariable Long id) {
         Optional<Task> productOptional = taskService.findById(id);
         if (productOptional.isPresent()) {
-            taskService.deleteById(id);
+            taskService.remove(id);
             return new ResponseEntity<>(productOptional.get(), HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

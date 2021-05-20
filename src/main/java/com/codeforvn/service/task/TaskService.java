@@ -29,7 +29,7 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void remove(Long id) {
         taskRepository.deleteById(id);
     }
 }
