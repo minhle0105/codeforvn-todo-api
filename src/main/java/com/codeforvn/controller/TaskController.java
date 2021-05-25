@@ -23,8 +23,8 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Task> getById(@PathVariable Long id) {
-        Optional<Task> productOptional = taskService.findById(id);
-        return productOptional.map(product -> new ResponseEntity<>(product, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Optional<Task> taskOptional = taskService.findById(id);
+        return taskOptional.map(task -> new ResponseEntity<>(task, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
@@ -33,21 +33,21 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateProduct(@PathVariable Long id, @RequestBody Task product) {
-        Optional<Task> productOptional = taskService.findById(id);
-        if (productOptional.isPresent()) {
-            product.setId(productOptional.get().getId());
-            return new ResponseEntity<>(taskService.save(product), HttpStatus.OK);
+    public ResponseEntity<Task> updateProduct(@PathVariable Long id, @RequestBody Task task) {
+        Optional<Task> taskOptional = taskService.findById(id);
+        if (taskOptional.isPresent()) {
+            task.setId(taskOptional.get().getId());
+            return new ResponseEntity<>(taskService.save(task), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Task> deleteProduct(@PathVariable Long id) {
-        Optional<Task> productOptional = taskService.findById(id);
-        if (productOptional.isPresent()) {
+        Optional<Task> taskOptional = taskService.findById(id);
+        if (taskOptional.isPresent()) {
             taskService.remove(id);
-            return new ResponseEntity<>(productOptional.get(), HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(taskOptional.get(), HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
