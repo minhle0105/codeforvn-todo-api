@@ -15,13 +15,13 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final IUserRepository userRepository;
     private final ITokenRepository tokenRepository;
 
-    @Transactional
     public void signUp(RegisterRequest registerRequest) {
         User user = new User();
         user.setUserName(registerRequest.getUsername());
