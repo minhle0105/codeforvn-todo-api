@@ -10,7 +10,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
     @PostMapping
-    public void signup(@RequestBody RegisterRequest registerRequest) {
-
-    }
+    public void signup(@RequestBody RegisterRequest registerRequest) {}
 }
