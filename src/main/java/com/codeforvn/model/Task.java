@@ -14,4 +14,6 @@ public class Task {
     private String description;
     private String priorityLevel;
     private boolean completed;
+    @ManyToOne
+    private User user;
 }
