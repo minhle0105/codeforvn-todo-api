@@ -1,6 +1,6 @@
 package com.codeforvn.service.authentication;
 
-import com.codeforvn.exception.SpringRedditException;
+import com.codeforvn.exception.TodolistException;
 import com.codeforvn.model.NotificationEmail;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final MailContentBuilder mailContentBuilder;
 
-    void sendMail(NotificationEmail notificationEmail) throws SpringRedditException {
+    void sendMail(NotificationEmail notificationEmail) throws TodolistException {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
             messageHelper.setFrom("codeforvn@gmail.com");
@@ -31,7 +31,7 @@ public class MailService {
             log.info("Activation email sent!!");
         } catch (MailException e) {
             log.error("Exception occurred when sending mail", e);
-            throw new SpringRedditException("Exception occurred when sending mail to " + notificationEmail.getRecipient());
+            throw new TodolistException("Exception occurred when sending mail to " + notificationEmail.getRecipient());
         }
     }
 }

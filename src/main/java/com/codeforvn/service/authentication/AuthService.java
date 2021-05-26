@@ -1,6 +1,7 @@
 package com.codeforvn.service.authentication;
 
 import com.codeforvn.dto.RegisterRequest;
+import com.codeforvn.exception.TodolistException;
 import com.codeforvn.model.NotificationEmail;
 import com.codeforvn.model.User;
 import com.codeforvn.model.VerificationToken;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -53,4 +55,17 @@ public class AuthService {
     }
 
 
+    public void verifyAccount(String token) {
+        Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
+        verificationToken.orElseThrow(() -> new TodolistException("Invalid token"));
+        fetchUserAndEnable(verificationToken.get());
+    }
+
+    @Transactional
+    void fetchUserAndEnable(VerificationToken verificationToken) {
+        String username = verificationToken.getUser().getUsername();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new TodolistException("User not found"));
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
 }

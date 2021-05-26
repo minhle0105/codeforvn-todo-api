@@ -22,8 +22,10 @@ public class AuthController {
                 HttpStatus.OK);
     }
 
-    @GetMapping("/home")
-    public ResponseEntity<String> homepage() {
-        return new ResponseEntity<>("Hello", HttpStatus.OK);
+    @GetMapping("accountVerification/{token}")
+    public ResponseEntity<String> verifyAccount(@PathVariable String token) {
+        authService.verifyAccount(token);
+        return new ResponseEntity<>("Account Activated Successfully", HttpStatus.OK);
     }
+
 }
