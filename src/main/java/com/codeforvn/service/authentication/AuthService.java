@@ -1,5 +1,7 @@
 package com.codeforvn.service.authentication;
 
+import com.codeforvn.dto.AuthenticationResponse;
+import com.codeforvn.dto.LoginRequest;
 import com.codeforvn.dto.RegisterRequest;
 import com.codeforvn.exception.TodolistException;
 import com.codeforvn.model.NotificationEmail;
@@ -7,7 +9,12 @@ import com.codeforvn.model.User;
 import com.codeforvn.model.VerificationToken;
 import com.codeforvn.repository.ITokenRepository;
 import com.codeforvn.repository.IUserRepository;
+import com.codeforvn.security.JwtProvider;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +32,9 @@ public class AuthService {
     private final IUserRepository userRepository;
     private final ITokenRepository tokenRepository;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
 
-    @Transactional
     public void signUp(RegisterRequest registerRequest) {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
@@ -57,15 +65,21 @@ public class AuthService {
 
     public void verifyAccount(String token) {
         Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
-        verificationToken.orElseThrow(() -> new TodolistException("Invalid token"));
-        fetchUserAndEnable(verificationToken.get());
+        fetchUserAndEnable(verificationToken.orElseThrow(() -> new TodolistException("Invalid Token")));
     }
 
-    @Transactional
     void fetchUserAndEnable(VerificationToken verificationToken) {
         String username = verificationToken.getUser().getUsername();
         User user = userRepository.findByUsername(username).orElseThrow(() -> new TodolistException("User not found"));
         user.setEnabled(true);
         userRepository.save(user);
+    }
+
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtProvider.generateToken(authentication);
+        return new AuthenticationResponse(token, loginRequest.getUsername());
     }
 }

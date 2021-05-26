@@ -1,5 +1,7 @@
 package com.codeforvn.controller;
 
+import com.codeforvn.dto.AuthenticationResponse;
+import com.codeforvn.dto.LoginRequest;
 import com.codeforvn.dto.RegisterRequest;
 import com.codeforvn.service.authentication.AuthService;
 import lombok.AllArgsConstructor;
@@ -25,6 +27,11 @@ public class AuthController {
     public ResponseEntity<String> verifyAccount(@PathVariable String token) {
         authService.verifyAccount(token);
         return new ResponseEntity<>("Account Activated Successfully", HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 
 }
