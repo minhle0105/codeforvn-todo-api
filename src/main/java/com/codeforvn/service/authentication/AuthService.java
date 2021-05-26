@@ -1,6 +1,7 @@
 package com.codeforvn.service.authentication;
 
 import com.codeforvn.dto.RegisterRequest;
+import com.codeforvn.model.NotificationEmail;
 import com.codeforvn.model.User;
 import com.codeforvn.model.VerificationToken;
 import com.codeforvn.repository.ITokenRepository;
@@ -21,17 +22,24 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final IUserRepository userRepository;
     private final ITokenRepository tokenRepository;
+    private final MailService mailService;
 
+    @Transactional
     public void signUp(RegisterRequest registerRequest) {
         User user = new User();
-        user.setUserName(registerRequest.getUsername());
-        user.setUserEmail(registerRequest.getEmail());
-        user.setUserPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setUsername(registerRequest.getUsername());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setCreated(Instant.now());
         user.setEnabled(false);
 
         userRepository.save(user);
+
         String token = generateVerificationToken(user);
+        mailService.sendMail(new NotificationEmail("Please Activate your Account",
+                user.getEmail(), "Thank you for signing up to Spring Reddit, " +
+                "please click on the below url to activate your account : " +
+                "http://localhost:8080/api/auth/accountVerification/" + token));
     }
 
     private String generateVerificationToken(User user) {
@@ -39,7 +47,10 @@ public class AuthService {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
         verificationToken.setUser(user);
+
         tokenRepository.save(verificationToken);
         return token;
     }
+
+
 }
