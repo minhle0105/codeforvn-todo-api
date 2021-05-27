@@ -2,6 +2,8 @@ package com.codeforvn.controller;
 
 import com.codeforvn.model.Task;
 import com.codeforvn.service.task.ITaskService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin("*")
-@RequestMapping("/tasks")
+//@CrossOrigin("*")
+@RequestMapping("/api/tasks")
+@AllArgsConstructor
+@Slf4j
 public class TaskController {
     @Autowired
     private ITaskService taskService;
