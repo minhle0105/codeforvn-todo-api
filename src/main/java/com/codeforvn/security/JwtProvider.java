@@ -19,6 +19,10 @@ public class JwtProvider {
     private String jwtSecret;
     private int jwtExpiration = 900000;
 
+    public int getJwtExpiration() {
+        return jwtExpiration;
+    }
+
     String generateKey() {
         StringBuilder key = new StringBuilder();
         for (int i = 0; i < 4; i++) {
@@ -60,6 +64,15 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody().getSubject();
         return userName;
+    }
+
+    public String generateTokenWithUserName(String userName) {
+        return Jwts.builder()
+                .setSubject(userName)
+                .setIssuedAt(Date.from(Instant.now()))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .setExpiration(Date.from(Instant.now().plusMillis(jwtExpiration)))
+                .compact();
     }
 
 
