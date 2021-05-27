@@ -1,67 +1,64 @@
 package com.codeforvn.security;
 
 import com.codeforvn.exception.TodolistException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Value;
+import io.jsonwebtoken.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-
-import com.codeforvn.model.User;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.sql.Date;
-import java.time.Instant;
-import static io.jsonwebtoken.Jwts.parserBuilder;
-import static java.util.Date.from;
+import java.util.UUID;
+
 @Service
 public class JwtProvider {
 
-    private KeyStore keyStore;
-    private final char[] pwdArray = "secret".toCharArray();
+    private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
 
-    public void createKeyStore() {
-        try {
-            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null, pwdArray);
-            FileOutputStream fos = new FileOutputStream("newKeyStore.jks");
-            keyStore.store(fos, pwdArray);
+
+    private String jwtSecret;
+
+    String generateKey() {
+        StringBuilder key = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            key.append(UUID.randomUUID().toString());
         }
-        catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
-            throw new TodolistException("Exception occurred while creating keystore");
-        }
-    }
-    @PostConstruct
-    public void init() {
-        try {
-            createKeyStore();
-            keyStore = KeyStore.getInstance("JKS");
-            InputStream resourceAsStream = getClass().getResourceAsStream("newKeyStore.jks");
-            keyStore.load(resourceAsStream, pwdArray);
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-            throw new TodolistException("Exception occurred while loading keystore");
-        }
+        key = new StringBuilder(key.toString().replaceAll("-", "a"));
+        return key.toString();
     }
 
-    public String generateToken(Authentication authentication) {
-        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+    JwtProvider() {
+        jwtSecret = generateKey();
+    }
+
+    private int jwtExpiration = 86400;
+
+    public String generateJwtToken(Authentication authentication) {
+
+        org.springframework.security.core.userdetails.User userPrincipal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+
         return Jwts.builder()
-                .setSubject(principal.getUsername())
-                .signWith(getPrivateKey())
+                .setSubject((userPrincipal.getUsername()))
+                // .setExpiration(new Date((new Date()).getTime() + jwtExpiration * 1000))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
-    private Key getPrivateKey() {
+    public boolean validateJwtToken(String authToken) {
         try {
-            return (PrivateKey) keyStore.getKey("newKeyStore","secret".toCharArray());
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-            throw new TodolistException("Exception occurred while retrieving public key from keystore");
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            return true;
+        } catch (MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            throw new TodolistException("Cannot validate jwt token");
         }
+    }
+
+    public String getUserNameFromJwtToken(String token) {
+
+        String userName = Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody().getSubject();
+        return userName;
     }
 
 
